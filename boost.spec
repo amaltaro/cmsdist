@@ -1,13 +1,9 @@
-### RPM external boost 1.57.0
+### RPM external boost 1.63.0
 
-%define tag 040a06a
+%define tag 68362cdf020bfed8639c09b8705476d138d884dd
 %define branch cms/v%realversion
 %define github_user cms-externals
 Source: git+https://github.com/%github_user/%n.git?obj=%{branch}/%{tag}&export=%{n}-%{realversion}&output=/%{n}-%{realversion}.tgz
-
-%if "%{?cms_cxxflags:set}" != "set"
-%define cms_cxxflags -std=c++11 -O2
-%endif
 
 Requires: python bz2lib zlib
 
@@ -33,7 +29,6 @@ b2 -q \
    --build-dir=build-boost \
    --disable-icu \
    --without-atomic \
-   --without-chrono \
    --without-container \
    --without-context \
    --without-coroutine \
@@ -50,7 +45,6 @@ b2 -q \
    link=shared \
    threading=multi \
    variant=release \
-   cxxflags="%{cms_cxxflags}" \
    -sBZIP2_INCLUDE=${BZ2LIB_ROOT}/include \
    -sBZIP2_LIBPATH=${BZ2LIB_ROOT}/lib \
    -sZLIB_INCLUDE=${ZLIB_ROOT}/include \
@@ -85,7 +79,7 @@ for tool in $(echo %{requiredtools} | sed -e's|\s+| |;s|^\s+||'); do
   root=$(echo $tool | tr a-z- A-Z_)_ROOT; eval r=\$$root
   if [ X"$r" != X ] && [ -r "$r/etc/profile.d/init.sh" ]; then
     echo "test X\$$root != X || . $r/etc/profile.d/init.sh" >> %i/etc/profile.d/dependencies-setup.sh
-    echo "test X\$$root != X || source $r/etc/profile.d/init.csh" >> %i/etc/profile.d/dependencies-setup.csh
+    echo "test \$?$root != 0 || source $r/etc/profile.d/init.csh" >> %i/etc/profile.d/dependencies-setup.csh
   fi
 done
 

@@ -1,10 +1,10 @@
-### RPM external condor 8.5.7
+### RPM external condor 8.6.11
 ## INITENV +PATH LD_LIBRARY_PATH %i/lib/condor
 ## INITENV +PATH PYTHONPATH %i/${PYTHON_LIB_SITE_PACKAGES}
 %define condortag %(echo V%realversion | tr "." "_")
 
 Source: git://github.com/htcondor/htcondor.git?obj=master/%{condortag}&export=condor-%{realversion}&output=/condor-%{realversion}.tar.gz
-Patch0: cms-htcondor-build
+Patch0: condor-cms-build
 Patch1: condor-vomsapi-static
 
 Requires: openssl zlib expat pcre libtool python boost p5-archive-tar curl libxml2 p5-time-hires libuuid

@@ -1,0 +1,103 @@
+--- ./externals/bundles/glibc/CMakeLists.txt.ori	2018-06-20 22:21:56.869224604 +0200
++++ ./externals/bundles/glibc/CMakeLists.txt	2018-06-20 22:22:24.198414823 +0200
+@@ -31,7 +31,6 @@
+ 	# check only the major and minor bits of gcc version.
+ 	string(SUBSTRING ${CMAKE_C_COMPILER_VERSION} 0 2 GCC_VER_CHECK)
+ 	# corner off glibc b/c it effect  
+-	set(GLIBC_DETECTED ON)
+         set(GLIBC_BUILD_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/glibc-prefix/src/glibc)
+ 
+ 	# By default, we don't need to set any flag environment variables
+--- ./externals/bundles/boost/1.49.0/CMakeLists.txt.ori	2018-06-20 22:22:59.856663014 +0200
++++ ./externals/bundles/boost/1.49.0/CMakeLists.txt	2018-06-20 22:23:40.690947231 +0200
+@@ -73,7 +73,7 @@
+ 
+ 
+ # we only use our version of boost if the system is not good enough
+-if (NOT PROPER) # AND (NOT Boost_FOUND OR SYSTEM_NOT_UP_TO_SNUFF) )
++if ( (NOT PROPER) AND (NOT Boost_FOUND OR SYSTEM_NOT_UP_TO_SNUFF) )
+ 
+ 	if (WINDOWS)
+ 	  # need to expand the configure and
+--- ./src/condor_io/condor_auth_ssl.cpp.ori	2018-06-20 22:24:00.965088344 +0200
++++ ./src/condor_io/condor_auth_ssl.cpp	2018-06-20 22:25:43.885804700 +0200
+@@ -107,6 +107,8 @@
+ 	if (
+ #if defined(HAVE_EXT_KRB5)
+ 		Condor_Auth_Kerberos::Initialize() == false ||
++#else
++                if ( (dl_hdl = dlopen(LIBSSL_SO, RTLD_LAZY)) == NULL ||
+ #endif
+ 		 (dl_hdl = dlopen(LIBSSL_SO, RTLD_LAZY)) == NULL ||
+ #if OPENSSL_VERSION_NUMBER < 0x10100000L
+--- ./build/cmake/CondorPackageConfig.cmake.ori	2018-06-20 22:15:34.400562522 +0200
++++ ./build/cmake/CondorPackageConfig.cmake	2018-06-20 22:17:01.324167533 +0200
+@@ -167,10 +167,6 @@
+ 		set( CONDOR_RPATH "$ORIGIN/../lib:/lib:/usr/lib:$ORIGIN/../lib/condor:/usr/lib/condor" )
+ 		set( EXTERNALS_RPATH "$ORIGIN/../lib:/lib:/usr/lib:$ORIGIN/../lib/condor:/usr/lib/condor" )
+ 		set( PYTHON_RPATH "$ORIGIN/../:/lib:/usr/lib:$ORIGIN/../condor" )
+-	else()
+-		set( CONDOR_RPATH "$ORIGIN/../lib:/lib64:/usr/lib64:$ORIGIN/../lib/condor:/usr/lib64/condor" )
+-		set( EXTERNALS_RPATH "$ORIGIN/../lib:/lib64:/usr/lib64:$ORIGIN/../lib/condor:/usr/lib64/condor" )
+-		set( PYTHON_RPATH "$ORIGIN/../:/lib64:/usr/lib64:$ORIGIN/../condor" )
+ 	endif()
+ elseif( ${OS_NAME} STREQUAL "DARWIN" )
+ 	set( EXTERNALS_LIB "${C_LIB}/condor" )
+--- ./build/cmake/macros/CondorSetLinkLibs.cmake.ori	2018-06-20 22:17:14.950262374 +0200
++++ ./build/cmake/macros/CondorSetLinkLibs.cmake	2018-06-20 22:18:15.204681761 +0200
+@@ -32,7 +32,7 @@
+ 		if (DARWIN OR AIX OR SOLARIS)
+ 			target_link_libraries( ${_CNDR_TARGET} ${${_CNDR_TARGET}LinkLibs} ${${_CNDR_TARGET}LinkLibs}  )
+ 		else()
+-	 		target_link_libraries( ${_CNDR_TARGET} -Wl,--start-group ${${_CNDR_TARGET}LinkLibs} -Wl,--end-group -Wl,--enable-new-dtags )
++	 		target_link_libraries( ${_CNDR_TARGET} ${${_CNDR_TARGET}LinkLibs} ${${_CNDR_TARGET}LinkLibs} )
+ 		endif()
+ 	 else()
+ 	 	target_link_libraries( ${_CNDR_TARGET} ${${_CNDR_TARGET}LinkLibs};${CONDOR_WIN_LIBS} )
+--- ./build/cmake/CondorConfigure.cmake.ori	2018-06-20 22:09:25.003991433 +0200
++++ ./build/cmake/CondorConfigure.cmake	2018-06-20 22:15:12.663411225 +0200
+@@ -645,11 +645,7 @@
+ 
+ #####################################
+ # RPATH option
+-if (LINUX AND NOT PROPER)
+-	option(CMAKE_SKIP_RPATH "Skip RPATH on executables" OFF)
+-else()
+-	option(CMAKE_SKIP_RPATH "Skip RPATH on executables" ON)
+-endif()
++option(CMAKE_SKIP_RPATH "Skip RPATH on executables" OFF)
+ 
+ if ( NOT CMAKE_SKIP_RPATH )
+ 	set( CMAKE_INSTALL_RPATH ${CONDOR_RPATH} )
+@@ -1173,7 +1169,7 @@
+ 	endif()
+ 
+ 	if (LINUX)
+-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--warn-once -Wl,--warn-common")
++		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--warn-common")
+ 		if ( "${LINUX_NAME}" STREQUAL "Ubuntu" )
+ 			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
+ 		endif()
+--- ./src/nordugrid_gahp/CMakeLists.txt.ori	2018-06-21 06:56:43.717267510 +0200
++++ ./src/nordugrid_gahp/CMakeLists.txt	2018-06-21 06:58:29.498017837 +0200
+@@ -16,11 +16,7 @@
+  # 
+  ############################################################### 
+ 
+-if (HAVE_EXT_GLOBUS)
+-
+-	if (NOT HAVE_LDAP_H OR NOT LDAP_FOUND)
+-		message(FATAL_ERROR "Can't find ldap.h, needed to build nordugrid_gahp")
+-	endif()
++if (HAVE_EXT_GLOBUS AND HAVE_LDAP_H AND LDAP_FOUND )
+ 
+ 	add_definitions(-DLDAP_DEPRECATED)
+ 
+@@ -52,6 +48,6 @@
+ 
+ else()
+ 
+-	message( STATUS "NOTE: *nordugrid* targets will not be built HAVE_EXT_GLOBUS=${HAVE_EXT_GLOBUS}" )
++        message( STATUS "NOTE: *nordugrid* targets will not be built HAVE_EXT_GLOBUS=${HAVE_EXT_GLOBUS} HAVE_LDAP_H=${HAVE_LDAP_H}" )
+ 
+ endif ()
