@@ -9,6 +9,8 @@ Requires: python
 python setup.py build
 
 %install
+mkdir -p %i/$PYTHON_LIB_SITE_PACKAGES
+PYTHONPATH=%i/$PYTHON_LIB_SITE_PACKAGES:$PYTHONPATH \
 python setup.py install --prefix=%i
 find %i -name '*.egg-info' -exec rm {} \;
 for f in %i/bin/cheetah*; do perl -p -i -e 's{.*}{#!/usr/bin/env python} if $. == 1 && m{#!.*/bin/python}' $f; done
