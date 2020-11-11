@@ -2,8 +2,8 @@
 ## INITENV +PATH %{dynamic_path_var} %i/lib/mysql
 ## INITENV +PATH PATH %i/scripts
 ## INITENV SET MYSQL_HOME $MYSQL_ROOT
-#Source: https://downloads.mariadb.org/f/mariadb-%realversion/source/mariadb-%realversion.tar.gz/from/http%3A//ftp.hosteurope.de/mirror/archive.mariadb.org/?serve
-Source: https://downloads.mariadb.org/interstitial/mariadb-10.1.21/source/mariadb-10.1.21.tar.gz/from/https%3A//archive.mariadb.org/
+Source0: https://ftp.igh.cnrs.fr/pub/archive.mariadb.org/mariadb-%{realversion}/source/mariadb-%{realversion}.tar.gz
+#Source1: https://downloads.mariadb.org/interstitial/mariadb-%{realversion}/source/mariadb-%{realversion}.tar.gz/from/https://archive.mariadb.org/
 Requires: zlib openssl ncurses libxml2
 BuildRequires: cmake
 Provides: perl(GD)
